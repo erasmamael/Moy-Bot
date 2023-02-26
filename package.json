@@ -1,0 +1,29 @@
+{
+  "name": "moy-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erasmamael/Moy-Bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/erasmamael/Moy-Bot/issues"
+  },
+  "homepage": "https://github.com/erasmamael/Moy-Bot#readme",
+  "dependencies": {
+    "@keyv/mongo": "^2.1.8",
+    "@keyv/mysql": "^1.6.0",
+    "@keyv/postgres": "^1.4.1",
+    "@keyv/redis": "^2.5.5",
+    "@keyv/sqlite": "^3.6.4",
+    "discord.js": "^14.7.1",
+    "keyv": "^4.5.2"
+  }
+}
