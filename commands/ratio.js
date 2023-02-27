@@ -12,28 +12,28 @@ module.exports = {
 	 */
 	async execute(interaction){
 
-		//recupération du message qui précède
-		const lstMessages = await message.channel.messages.fetch({limit: 2});
-		const messageBefore = lstMessages.last();
-		
 		//repondre ratio 
 		var embed = new EmbedBuilder()
 		.setColor('#1d09d8')
-		.setTitle("Ratio")
-		.setDescription(`${interaction.user} veut ratio ${messageBefore.author}`);
-
+		.setTitle("Ratio");
+		
 		interaction.reply({
 			embeds: [embed]
 		});
-		
+
 		//ajouter une réaction au message précédent et au message envoyé 
 		var message = await interaction.fetchReply();
+		
+		//recupération du message qui précède
+		const lstMessages = await message.channel.messages.fetch({limit: 2});
+		const messageBefore = lstMessages.last();
+
 
 		message.react('💙');
 		messageBefore.react('💙');
 
 		//attendre 30 sec
-		await new Promise(r => setTimeout(r, 5000)); 
+		await new Promise(r => setTimeout(r, 30000)); 
 
 		//modification de la couleur pour dire que le temps est écoulé 
 		embed.setColor('DarkRed');
