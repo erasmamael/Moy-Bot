@@ -2,6 +2,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { CommandInteraction, EmbedBuilder } = require('discord.js');
 
 module.exports = {
+    couldown: 5,
     data: new SlashCommandBuilder()
         .setName('random-quote')
         .setDescription('A random quote from the channel selected with /select-channel-quote'),
@@ -13,67 +14,86 @@ module.exports = {
     async execute(interaction){
 
         const channel = require('./select-channel-quote.js');
-        console.log('connexion reussi');
+
         if(channel.quoteChannel != null ){
 
-            const random = Math.floor(Math.random() * 100);
+            let lstMessage = [];
+            // Create message pointer
+            let message = await channel.quoteChannel.messages
+                .fetch({ limit: 1 })
+                .then(messagePage => (messagePage.size === 1 ? messagePage.at(0) : null));
 
-			let list = await channel.quoteChannel.messages.fetch({limit: random});
+            while (message) {
+            await channel.quoteChannel.messages
+                .fetch({ limit: 100, before: message.id })
+                .then(messagePage => {
+                    lstMessage.push.apply(messagePage);
 
-            let message = [];
+                    // Update our message pointer to be last message in page of messages
+                    message = 0 < messagePage.size ? messagePage.at(messagePage.size - 1) : null;
+                });
+            }
+
+            const random = Math.floor(Math.random() * lstMessage.length);
+
+            const selectedMessage = lstMessage[random];
+
+            let text = [];
             let author = "";
 
-            if(list.last().content.split('\n').length>1){
-                console.log('retour à la ligne');
-                message = list.last().content.split('\n');
-                author = message[message.length-1];
-            }else if(list.last().content.split('"').length>2){
-                console.log('guillemet');
-                message = list.last().content.split('"');
-                author = message[message.length-1];
-            }else if(list.last().content.split('@').length>1){
-                console.log('les pings');
-                message = list.last().content.split('@');
-                author = "<@" + message[message.length-1];
-            }else{
-                console.log('rien');
-                message = list.last().content;
-                author = list.last().author;
-            }
+            if(selectedMessage.content.split('\n').length>1){
+                text = selectedMessage.content.split('\n');
+                author = text[text.length-1];
 
-			// let phrase = list.last().content.split("<@");
+            }else if(selectedMessage.content.split('"').length>2){
+                text = selectedMessage.content.split('"');
+                author = text[text.length-1];
 
-			// if(phrase[1] === undefined){
-			// 	phrase = list.last().content.split("\n");
-			// }else{
-			// 	phrase[1] = "<@" + phrase[1];
-			// }
+            }else if(selectedMessage.content.split('@').length>1){
+                text = selectedMessage.content.split('@');
+            
+                if(text[0].endsWith('<')){
+                    author = "<@" + text[text.length-1];
+                    text[0] = text[0].slice(0, -1);
 
-            console.log('préparation de la réponse');
-            let phrase = "";
-            if(message.length > 1){
-                for(let i=0; i<message.length-1; i++){
-                    phrase = phrase + message[i];
+                }else{
+                    author = text[text.length-1]
                 }
             }else{
-                console.log('pas boucle');
-                phrase = message;
+                text = selectedMessage.content;
+                author = "";
             }
-			
-            console.log('message : '+message);
-            console.log('phrase : ' + phrase);
-            console.log('author : '+author);
-            await interaction.reply({
-				embeds: [
-					new EmbedBuilder()
-						.setColor('#7a7a7a')
-						.setTitle(phrase)
-						.setDescription(author)
-						.setTimestamp(list.last().createdTimestamp)
-				]
-			});
+            
+            
+            let phrase = "";
+            if(Array.isArray(text)){
+                for(let i=0; i<text.length-1; i++){
+                    phrase = phrase + " "+ text[i];
+                }
+            }else{
+                phrase = text;
+            }
+
+            if(author === "") author = "<@"+selectedMessage.author.id+">";
+
+            const response = new EmbedBuilder()
+                            .setColor('#7a7a7a')
+                            .setTimestamp(selectedMessage.createdTimestamp);
+
+            if(phrase === ""){ 
+                response.setTitle(author);
+                
+            }else{
+                response.setTitle(phrase)
+                        .setDescription(author);
+            }
+            
+            if(selectedMessage.attachments.size>0){
+                response.setImage(selectedMessage.attachments.first().url);
+            }
+            console.log(response);
+            await interaction.reply({embeds:[response]});
         }else{
-            console.log('Pas bon');
             await interaction.reply("there are no selected channels.\nUse `/select-channel-quote` to select a channel.");
         }
         
