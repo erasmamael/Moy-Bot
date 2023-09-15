@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { CommandInteraction, EmbedBuilder } = require('discord.js');
 
 module.exports = {
-	couldown: 3600,
+	cooldown: 3600,
 	data: new SlashCommandBuilder()
 		.setName('ratio')
 		.setDescription('to ratio the personne who send the previous message'),

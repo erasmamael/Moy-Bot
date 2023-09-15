@@ -1,8 +1,8 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { CommandInteraction, EmbedBuilder } = require('discord.js');
+const { CommandInteraction, EmbedBuilder, Collection } = require('discord.js');
 
 module.exports = {
-    couldown: 5,
+    cooldown: 10,
     data: new SlashCommandBuilder()
         .setName('random-quote')
         .setDescription('A random quote from the channel selected with /select-channel-quote'),
@@ -18,6 +18,9 @@ module.exports = {
         if(channel.quoteChannel != null ){
 
             let lstMessage = [];
+
+            await interaction.deferReply();
+
             // Create message pointer
             let message = await channel.quoteChannel.messages
                 .fetch({ limit: 1 })
@@ -27,8 +30,7 @@ module.exports = {
             await channel.quoteChannel.messages
                 .fetch({ limit: 100, before: message.id })
                 .then(messagePage => {
-                    lstMessage.push.apply(messagePage);
-
+                    messagePage.forEach(msg => lstMessage.push(msg));
                     // Update our message pointer to be last message in page of messages
                     message = 0 < messagePage.size ? messagePage.at(messagePage.size - 1) : null;
                 });
@@ -63,8 +65,7 @@ module.exports = {
                 text = selectedMessage.content;
                 author = "";
             }
-            
-            
+
             let phrase = "";
             if(Array.isArray(text)){
                 for(let i=0; i<text.length-1; i++){
@@ -92,7 +93,9 @@ module.exports = {
                 response.setImage(selectedMessage.attachments.first().url);
             }
             console.log(response);
-            await interaction.reply({embeds:[response]});
+                        
+            await interaction.editReply({embeds:[response]});
+            // await interaction.reply({embeds:[response]});
         }else{
             await interaction.reply("there are no selected channels.\nUse `/select-channel-quote` to select a channel.");
         }
