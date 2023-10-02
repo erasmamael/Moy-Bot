@@ -40,10 +40,6 @@ module.exports = {
 		embed.setColor('DarkRed');
 		message.edit({embeds: [embed]});
 
-		//incompréhensible mais permet d'actualiser le nombre de réactions 
-		message = await interaction.fetchReply();
-		await message.channel.messages.fetch({limit: 2});
-
 		//comparer le nombre de réaction
 		if(message.reactions.cache.get('💙').count > messageBefore.reactions.cache.get('💙').count){
 			message.channel.send(`Aller Hop ! Ratio ${messageBefore.author}`);
